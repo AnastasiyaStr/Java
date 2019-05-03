@@ -12,5 +12,6 @@ public interface CustomerService {
     List<CustomerEntity> getAllCustomers ();
     CustomerEntity deleteCustomer (Long id);
     CustomerEntity getCustomerById(Long id);
-    public Page<CustomerEntity> getCustomersByPage(int page);
+   Page<CustomerEntity> getCustomersByPage(int page);
+   void addImageToCustomer(Long id, String fileName);
 }

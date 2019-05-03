@@ -1,8 +1,6 @@
 package ua.home.projecttemplate.entity;
-import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
 
+import lombok.Data;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
@@ -25,4 +23,11 @@ public class CustomerEntity extends  BaseEntity{
     @Column(name="updated_at")
     private Date updated;
 
+    @Column(name="logo")
+    private byte[] logo;
+
+    @Column(name="file_name")
+    private String fileName;
+
+    private String image;
 }

@@ -85,4 +85,13 @@ public class CustomerServiceImpl implements CustomerService {
                 customerRepository.findAll(new PageRequest(page,4));
         return userEntities;
     }
+
+    @Override
+    public void addImageToCustomer(Long id, String fileName) {
+        CustomerEntity customerEntity =
+                customerRepository.findById(id).get();
+
+       customerEntity.setImage(fileName);
+       customerRepository.save(customerEntity);
+    }
 }

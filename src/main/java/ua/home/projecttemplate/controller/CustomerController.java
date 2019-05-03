@@ -2,13 +2,21 @@ package ua.home.projecttemplate.controller;
 
 import net.bytebuddy.implementation.bytecode.constant.DefaultValue;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import ua.home.projecttemplate.entity.CustomerEntity;
 import ua.home.projecttemplate.service.CustomerService;
+import ua.home.projecttemplate.service.FilesStorageService;
+
+import javax.servlet.http.HttpServletRequest;
 
 @CrossOrigin("*")
 @RestController
@@ -16,6 +24,16 @@ import ua.home.projecttemplate.service.CustomerService;
 public class CustomerController {
     @Autowired
     CustomerService customerService;
+    @Autowired
+    private FilesStorageService fileStorageService;
+
+//     @PostMapping("saveUserProfile")
+//     public ResponseEntity<?> createCustomer(@RequestParam("file")MultipartFile multipartFile,
+//        @RequestParam("user")String user
+//     )
+//         return new ResponseEntity<>(HttpStatus.CREATED);
+//     }
+
 
     @PostMapping
     public ResponseEntity<?> createCustomer(
@@ -38,8 +56,8 @@ public class CustomerController {
         );
     }
     @GetMapping("list")
-    public ResponseEntity<?> getUsersByPage(@RequestParam(defaultValue = "0") int page)  {
-        return new ResponseEntity<>(customerService.getCustomersByPage(page), HttpStatus.OK);
+    public Page<CustomerEntity> getUsersByPage(@RequestParam(defaultValue = "0") int page)  {
+        return customerService.getCustomersByPage(page);
     }
 
 
@@ -60,6 +78,47 @@ public class CustomerController {
         }
 
         return new ResponseEntity<>(customerUpdated, HttpStatus.OK); // 200
+    }
+    @PostMapping("{userId}/image")
+    public ResponseEntity<?> uploadImage(
+            @PathVariable("userId") Long id,
+            @RequestParam("imageFile")MultipartFile file
+    ) {
+        System.out.println(file.getOriginalFilename());
+
+        fileStorageService.storeFile(file);
+        customerService.addImageToCustomer(id, file.getOriginalFilename());
+        return new ResponseEntity<>(HttpStatus.ACCEPTED);
+    }
+
+    @GetMapping("image")
+    public ResponseEntity<?> getImage(
+            @RequestParam("imageName") String name,
+            HttpServletRequest servletRequest
+    ) {
+
+        Resource resource = fileStorageService.loadFile(name);
+
+        String contentType = null;
+
+        try {
+            contentType = servletRequest
+                    .getServletContext()
+                    .getMimeType(
+                            resource.getFile().getAbsolutePath());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        if (contentType == null) {
+            contentType = "application/octet-stream";
+        }
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(contentType))
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        "inline; filename=\"" + resource.getFilename() + "\"")
+                .body(resource);
     }
 
 }
