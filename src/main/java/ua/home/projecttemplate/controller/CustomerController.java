@@ -91,9 +91,9 @@ public class CustomerController {
         return new ResponseEntity<>(HttpStatus.ACCEPTED);
     }
 
-    @GetMapping("image")
+    @GetMapping("image/{imageName}")
     public ResponseEntity<?> getImage(
-            @RequestParam("imageName") String name,
+            @PathVariable("imageName") String name,
             HttpServletRequest servletRequest
     ) {
 
